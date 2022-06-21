@@ -1,3 +1,6 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -8,24 +11,26 @@ datasource db {
 }
 
 model Table {
-  id        String   @id @default(uuid())
-  number    Int      @unique
-  // NOVOS DECORATORS ABAIXO:
+  id     String @id @default(uuid())
+  number Int    @unique
+
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
+
+  orders Order[]
 
   @@map("table")
 }
 
 model Product {
-  id          String   @id @default(uuid())
-  name        String   @unique
-  description String
-  price       Float
-  image       String
-  // NOVOS DECORATORS ABAIXO:
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  id             String         @id @default(uuid())
+  name           String         @unique
+  description    String
+  image          String
+  price          Float
+  createdAt      DateTime       @default(now()) @map("created_at")
+  updatedAt      DateTime       @updatedAt @map("updated_at")
+  ordersProducts OrderProduct[]
 
   @@map("product")
 }
@@ -40,5 +45,35 @@ model User {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
+  orders Order[]
+
   @@map("user")
+}
+
+model Order {
+  id            String         @id @default(uuid())
+  user          User           @relation(fields: [userId], references: [id])
+  userId        String
+  table         Table          @relation(fields: [tableId], references: [id])
+  tableId       String
+  orderProducts OrderProduct[]
+  createdAt     DateTime       @default(now()) @map("created_at")
+  updatedAt     DateTime       @updatedAt @map("updated_at")
+
+  @@map("order")
+}
+
+model OrderProduct {
+  id          String   @id @default(uuid())
+  order       Order    @relation(fields: [orderId], references: [id])
+  orderId     String
+  product     Product  @relation(fields: [productId], references: [id])
+  productId   String
+  quantity    Int
+  description String
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@unique([orderId, productId])
+  @@map("order_product")
 }
